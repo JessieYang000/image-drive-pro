@@ -12,10 +12,6 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
 
 
 // Create a connection to the MySQL database
@@ -36,3 +32,32 @@ const db = mysql.createPool({
     connection.release(); // Release the connection immediately
   });
   
+  app.post('/sign-up', async (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+    const hashedPassword = bcrypt.hashSync(password, 10); // Hash the password
+
+    // First, check if the email already exists
+    try {
+        const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+
+        if (users.length > 0) {
+            // Email already exists
+            return res.status(409).send({ message: "Email already in use, please login or use another email" });
+        }
+
+        // Email doesn't exist, create new user
+        const [result] = await db.query("INSERT INTO users (email, password) VALUES (?, ?)", [email, hashedPassword]);
+        console.log(result);
+        res.status(201).send({ message: "User created successfully" });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: "Error on server side" });
+    }
+});
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
