@@ -86,6 +86,20 @@ app.post('/sign-in', async (req, res) => {
     }
 });
 
+app.post('/upload-image', upload.single('image'), async (req, res) => {
+    try {
+        const uploader = req.body.uploader; // ID of the user who uploads the image
+        const imagePath = req.file.path; // The path to the stored image
+
+        // Store image information in the 'pictures' table
+        await db.query("INSERT INTO images (uploader, image_path, uploaded_at) VALUES (?, ?, NOW())", [uploader, imagePath]);
+        res.status(201).send({ message: "Image uploaded successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: "Error uploading image" });
+    }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
