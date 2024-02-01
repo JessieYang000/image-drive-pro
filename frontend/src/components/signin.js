@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
 import Axios from 'axios';
+import { useNavigate } from 'react-router';
 
 export default function Signin() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [responseMessage, setResponseMessage] = useState("");
+    const navigate = useNavigate();
     const { setIsAuthenticated } = useAuth();
 
     const signin = (e) => {
@@ -13,6 +15,7 @@ export default function Signin() {
         Axios.post('http://localhost:3001/sign-in', { email: email, password: password })
             .then((response) => {
                 setIsAuthenticated(true);
+                navigate('/images', { state: { email: email } }); // Redirect on success
             })
             .catch((error) => {
                 if (error.response && error.response.data) {
