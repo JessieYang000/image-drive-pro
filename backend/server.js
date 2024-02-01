@@ -57,6 +57,35 @@ const db = mysql.createPool({
     }
 });
 
+app.post('/sign-in', async (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    try {
+        const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+
+        if (users.length > 0) {
+            // User found, now compare the password
+            const isMatch = await bcrypt.compare(password, users[0].password);
+
+            if (isMatch) {
+                // Passwords match
+                res.send({ message: "Login successful" }); // You might want to send some user data here
+            } else {
+                // Passwords do not match
+                res.status(401).send({ message: "Invalid credentials" });
+            }
+        } else {
+            // No user found with that email
+            res.status(404).send({ message: "User not found" });
+        }
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: "Error on server side" });
+    }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
