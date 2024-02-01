@@ -1,4 +1,3 @@
-// ImageStorage.js
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useAuth } from './AuthContext';
@@ -16,7 +15,21 @@ function Images() {
     }
 
     const [selectedImage, setSelectedImage] = useState(null);
+    const [images, setImages] = useState([]);
 
+    useEffect(() => {
+        fetchImages();
+    }, [email]);
+
+    const fetchImages = () => {
+        Axios.get(`http://localhost:3001/user-images/${email}`)
+            .then(response => {
+                setImages(response.data);
+            })
+            .catch(error => {
+                console.error('Error fetching images:', error);
+            });
+    };
 
     const handleImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
@@ -26,7 +39,10 @@ function Images() {
 
     const handleUpload = (e) => {
         e.preventDefault();
-
+        if (!selectedImage) {
+            alert('Please select an image first!');
+            return;
+        }
         const formData = new FormData();
         formData.append('image', selectedImage);
         formData.append('uploader', email);
@@ -38,9 +54,9 @@ function Images() {
             .then((response) => {
                 setSelectedImage(null);
                 fileInputRef.current.value = "";
+                fetchImages();
             })
             .catch((error) => {
-                console.log(error);
             });
     };
 
@@ -80,6 +96,17 @@ function Images() {
                             Upload Image
                         </button>
                     </form>
+                </div>
+                <div className="image-gallery" style={{ marginTop: "20px", display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+                    {images.map(image => (
+                        <div key={image.id} className="image-item" style={{ maxWidth: '300px', border: '1px solid #ddd', padding: '10px', borderRadius: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '400px', background: 'white' }}>
+                            <img src={`http://localhost:3001/${image.image_path}`} alt="Uploaded" style={{ width: '100%', height: '70%', objectFit: 'cover' }} />
+                            <div>
+                                <p>Uploaded at: {new Date(image.uploaded_at).toLocaleString()}</p>
+                                <button className="btn btn-danger">Delete</button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </>
