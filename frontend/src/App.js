@@ -45,7 +45,7 @@ function AppWrapper() {
 
       <div className={isAuthRoute ? 'auth-inner' : ''}>
         <Routes>
-          <Route exact path="/" element={<Signin />} />
+          <Route exact path="/" element={<SignUp />} />
           <Route path="/sign-in" element={<Signin />} />
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/images" element={<Images />} />
