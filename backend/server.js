@@ -100,6 +100,20 @@ app.post('/upload-image', upload.single('image'), async (req, res) => {
     }
 });
 
+app.get('/user-images/:email', async (req, res) => {
+    const email = req.params.email;
+
+    try {
+        const [images] = await db.query("SELECT * FROM images WHERE uploader = ?", [email]);
+        res.status(200).json(images);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: "Error retrieving images" });
+    }
+});
+
+
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
